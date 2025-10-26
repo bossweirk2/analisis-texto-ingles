@@ -94,6 +94,8 @@ st.markdown("""
 try:
     image = Image.open("matrix_banner.jpg")
     st.image(image, caption="Decoding textual reality...", use_container_width=True)
+except Exception:
+    st.info("Puedes agregar una imagen llamada 'matrix_banner.jpg' para ambientar la app.")
 
 # ========================
 # ENTRADA DE DATOS
