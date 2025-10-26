@@ -94,7 +94,7 @@ st.markdown("""
 try:
     image = Image.open("matrix_banner.jpg")
     st.image(image, caption="Decoding textual reality...", use_container_width=True)
-except Exception:
+
 # ========================
 # ENTRADA DE DATOS
 # ========================
