@@ -10,44 +10,105 @@ from PIL import Image
 # CONFIGURACIÓN DE PÁGINA
 # ========================
 st.set_page_config(
-    page_title="Análisis de texto (inglés) – El Detective Semántico",
+    page_title="Linguistic Matrix – Semantic Intelligence System",
     layout="centered"
 )
 
 # ========================
-# CABECERA Y ESTILO
+# ESTILO MATRIX
+# ========================
+st.markdown("""
+<style>
+.stApp {
+    background-color: #000000; /* Fondo negro */
+    color: #00FF41; /* Verde neón */
+    font-family: 'Courier New', monospace;
+}
+
+/* Botón principal */
+.stButton>button {
+    background-color: #003B00;
+    color: #00FF41;
+    border-radius: 8px;
+    border: 1px solid #00FF41;
+    padding: 0.5em 1em;
+    font-weight: bold;
+    transition: 0.3s;
+}
+.stButton>button:hover {
+    background-color: #00FF41;
+    color: #000000;
+    transform: scale(1.05);
+}
+
+/* Títulos */
+h1, h2, h3, h4 {
+    color: #00FF41;
+    text-align: center;
+    text-shadow: 0 0 10px #00FF41;
+}
+
+/* Texto de ayuda y subtítulos */
+p, label, div, span {
+    color: #00FF41 !important;
+}
+
+/* Cuadros de texto */
+textarea, input {
+    background-color: #001a00 !important;
+    color: #00FF41 !important;
+    border: 1px solid #00FF41 !important;
+    border-radius: 6px !important;
+}
+
+/* Tablas */
+.dataframe {
+    color: #00FF41 !important;
+    background-color: #000000 !important;
+}
+
+/* Divisor */
+hr {
+    border: 1px solid #00FF41;
+    opacity: 0.3;
+}
+</style>
+""", unsafe_allow_html=True)
+
+# ========================
+# CABECERA MATRIX
 # ========================
 st.markdown("""
 <div style='text-align:center;'>
-    <h1 style='color:#2F2F4F;'>Análisis de texto (inglés)</h1>
-    <h3 style='color:#5A5A8F;'>El Detective Semántico</h3>
-    <p style='color:#666; font-size:16px;'>
-        Explora la relación entre tus textos y una pregunta usando el modelo TF-IDF.
-        Cada línea de texto se considera un documento, y el detective semántico investigará
-        cuál contiene la respuesta más relevante según su similitud semántica.
+    <h1>Linguistic Matrix</h1>
+    <h3>Semantic Intelligence System</h3>
+    <p>
+        You are entering the linguistic mainframe.<br>
+        Each document will be decoded into its semantic essence.<br>
+        The system will reveal which one aligns most with your query.
     </p>
 </div>
 """, unsafe_allow_html=True)
 
-# Imagen decorativa (más pequeña y debajo del título)
+# Imagen decorativa (opcional)
 try:
-    image = Image.open("detective_banner.jpg")  # Asegúrate de tener esta imagen en la carpeta del proyecto
-    st.image(image, width=300, caption="El Detective Semántico en acción", use_container_width=False)
+    image = Image.open("matrix_banner.jpg")
+    st.image(image, caption="Decoding textual reality...", use_container_width=True)
 except Exception:
-    st.info("Puedes agregar una imagen llamada 'detective_banner.jpg' para decorar la app.")
+    st.info("Puedes agregar una imagen llamada 'matrix_banner.jpg' para ambientar la app.")
 
 # ========================
 # ENTRADA DE DATOS
 # ========================
-st.markdown("#### Documentos a analizar (en inglés)")
+st.markdown("#### Enter the textual data to analyze:")
 text_input = st.text_area(
-    "Cada línea será tratada como un documento independiente:",
-    "The dog barks loudly.\nThe cat meows at night.\nThe dog and the cat play together.",
+    "Each line represents a separate data stream:",
+    "The system detects anomalies.\nLanguage is a code.\nMachines understand patterns.",
     height=150
 )
 
-st.markdown("#### Pregunta a investigar (en inglés)")
-question = st.text_input("Ejemplo:", "Who is playing?")
+st.markdown("#### Input your semantic query:")
+question = st.text_input("Query:", "What do machines understand?")
 
 # Inicializar stemmer
 stemmer = SnowballStemmer("english")
@@ -62,13 +123,13 @@ def tokenize_and_stem(text: str):
 # ========================
 # ANÁLISIS
 # ========================
-if st.button("Iniciar análisis"):
+if st.button("Run Semantic Scan"):
     documents = [d.strip() for d in text_input.split("\n") if d.strip()]
 
     if len(documents) < 1:
-        st.warning("Por favor, ingresa al menos un documento para analizar.")
+        st.warning("⚠️ Input at least one document for analysis.")
     else:
-        with st.spinner("El detective está revisando tus documentos..."):
+        with st.spinner("Analyzing data streams..."):
             vectorizer = TfidfVectorizer(
                 tokenizer=tokenize_and_stem,
                 stop_words="english",
@@ -77,17 +138,15 @@ if st.button("Iniciar análisis"):
 
             X = vectorizer.fit_transform(documents)
 
-            # Crear DataFrame TF-IDF
             df_tfidf = pd.DataFrame(
                 X.toarray(),
                 columns=vectorizer.get_feature_names_out(),
-                index=[f"Documento {i+1}" for i in range(len(documents))]
+                index=[f"Stream {i+1}" for i in range(len(documents))]
             )
 
-            st.markdown("### Matriz TF-IDF")
+            st.markdown("### TF-IDF Matrix")
             st.dataframe(df_tfidf.round(3))
 
-            # Calcular similitud coseno
             question_vec = vectorizer.transform([question])
             similarities = cosine_similarity(question_vec, X).flatten()
 
@@ -96,43 +155,41 @@ if st.button("Iniciar análisis"):
             best_score = similarities[best_idx]
 
             st.markdown("---")
-            st.markdown("### Resultados del análisis")
+            st.markdown("### Scan Results")
 
             st.success(f"""
-            **Pregunta analizada:** {question}  
-            **Documento más relevante:** Documento {best_idx+1}  
-            **Texto:** "{best_doc}"  
-            **Nivel de similitud:** {best_score:.3f}
+            **Query:** {question}  
+            **Most Relevant Stream:** Stream {best_idx+1}  
+            **Text:** "{best_doc}"  
+            **Semantic Correlation:** {best_score:.3f}
             """)
 
-            # Mostrar tabla de similitud
             sim_df = pd.DataFrame({
-                "Documento": [f"Documento {i+1}" for i in range(len(documents))],
-                "Texto": documents,
-                "Similitud": similarities
-            }).sort_values("Similitud", ascending=False)
+                "Stream": [f"Stream {i+1}" for i in range(len(documents))],
+                "Text": documents,
+                "Correlation": similarities
+            }).sort_values("Correlation", ascending=False)
 
-            st.markdown("### Ranking de similitud entre documentos")
+            st.markdown("### Correlation Ranking")
             st.dataframe(sim_df)
 
-            # Mostrar coincidencias de stems
             vocab = vectorizer.get_feature_names_out()
             q_stems = tokenize_and_stem(question)
             matched = [s for s in q_stems if s in vocab and df_tfidf.iloc[best_idx].get(s, 0) > 0]
 
             if matched:
-                st.markdown("### Palabras base coincidentes (stems encontrados)")
+                st.markdown("### Matched Lexical Patterns")
                 st.write(", ".join(matched))
             else:
-                st.info("No se encontraron coincidencias directas de palabras base.")
+                st.info("No direct lexical matches found.")
 
 # ========================
 # PIE DE PÁGINA
 # ========================
 st.markdown("""
 <hr>
-<div style='text-align:center; color:gray; font-size:14px;'>
-Proyecto de análisis semántico TF-IDF · El Detective Semántico · Versión demostrativa
+<div style='text-align:center; color:#00FF41; font-size:14px;'>
+Linguistic Matrix · Semantic Intelligence System v1.0  
+Reality is just text waiting to be decoded.
 </div>
 """, unsafe_allow_html=True)
-
